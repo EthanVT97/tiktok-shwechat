@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles  # ✅ Add this
 import os, httpx
 from urllib.parse import urlencode
 from dotenv import load_dotenv
@@ -7,6 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+
+# ✅ Serve static files like terms.html and privacy.html
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def root():
