@@ -10,10 +10,10 @@ load_dotenv()
 
 app = FastAPI()
 
-# Static files like /static/terms.html and privacy.html serve လုပ်မယ်
+# Static files like /static/terms.html and privacy.html
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Templates folder ကို define ပြီး index.html render ပြမယ်
+# Templates like /templates/index.html
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
@@ -25,7 +25,7 @@ def login():
     params = {
         "client_key": os.getenv("TIKTOK_CLIENT_KEY"),
         "response_type": "code",
-        "scope": "user.info.basic",
+        "scope": "user.info.basic,video.list",  # ✅ video.list permission
         "redirect_uri": os.getenv("TIKTOK_REDIRECT_URI"),
         "state": "shwe123"
     }
@@ -52,7 +52,14 @@ async def get_user_info(token: str):
         "Authorization": f"Bearer {token}"
     }
     async with httpx.AsyncClient() as client:
-        userinfo_url = "https://open.tiktokapis.com/v2/user/info/"
-        resp = await client.get(userinfo_url, headers=headers)
-        user_data = resp.json()
-    return JSONResponse(content=user_data)
+        resp = await client.get("https://open.tiktokapis.com/v2/user/info/", headers=headers)
+    return JSONResponse(content=resp.json())
+
+@app.get("/videos")
+async def get_user_videos(token: str):
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    async with httpx.AsyncClient() as client:
+        resp = await client.get("https://open.tiktokapis.com/v2/video/list/", headers=headers)
+    return JSONResponse(content=resp.json())
