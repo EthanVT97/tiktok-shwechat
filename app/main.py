@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles  # ✅ Add this
+from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import os, httpx
 from urllib.parse import urlencode
 from dotenv import load_dotenv
@@ -9,12 +10,15 @@ load_dotenv()
 
 app = FastAPI()
 
-# ✅ Serve static files like terms.html and privacy.html
+# Static files like /static/terms.html and privacy.html serve လုပ်မယ်
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/")
-def root():
-    return {"msg": "ShweChat TikTok Login Active ✅"}
+# Templates folder ကို define ပြီး index.html render ပြမယ်
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/login")
 def login():
@@ -41,3 +45,14 @@ async def callback(code: str, state: str):
         resp = await client.post(token_url, data=data)
         token_data = resp.json()
     return JSONResponse(content=token_data)
+
+@app.get("/me")
+async def get_user_info(token: str):
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    async with httpx.AsyncClient() as client:
+        userinfo_url = "https://open.tiktokapis.com/v2/user/info/"
+        resp = await client.get(userinfo_url, headers=headers)
+        user_data = resp.json()
+    return JSONResponse(content=user_data)
