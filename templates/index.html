@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ShweChat × TikTok Auth</title>
+  <meta name="theme-color" content="#ff0050" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes float {
@@ -14,40 +16,61 @@
     .float {
       animation: float 3s ease-in-out infinite;
     }
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-yellow-50 via-white to-pink-100 min-h-screen flex items-center justify-center px-4">
+<body class="bg-gradient-to-br from-[#fff7d6] via-white to-[#ffd6e7] min-h-screen flex items-center justify-center px-4">
 
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-8">
+  <div class="w-full max-w-md glass p-8 space-y-8">
     <!-- Partnership Badge -->
-    <div class="flex flex-col items-center space-y-2">
+    <div class="flex flex-col items-center space-y-3">
       <div class="flex items-center space-x-4">
-        <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/shwechat_logo.png" alt="ShweChat Logo" class="w-20 h-20 object-contain float" />
-        <div class="text-3xl font-bold text-gray-500">×</div>
-        <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/TikTok_logo.png" alt="TikTok Logo" class="w-16 h-16 object-contain float" />
+        <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/shwechat_logo.png"
+             alt="ShweChat Logo" class="w-20 h-20 object-contain float" />
+        <div class="text-3xl font-bold text-gray-600">×</div>
+        <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/TikTok_logo.png"
+             alt="TikTok Logo" class="w-16 h-16 object-contain float" />
       </div>
-      <span class="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Official Integration Partnership</span>
+      <span class="text-xs font-semibold text-white bg-[#ff0050] px-4 py-1 rounded-full shadow">🤝 Official Integration Partner</span>
     </div>
 
     <!-- Title -->
     <h1 class="text-center text-3xl font-extrabold text-gray-800">Login with TikTok</h1>
-    <p class="text-center text-gray-500 text-sm">Authorize your TikTok account to access ShweChat’s AI services.</p>
+    <p class="text-center text-gray-600 text-sm">Securely link your TikTok account to use ShweChat AI services.</p>
 
     <!-- Login Button -->
-    <button
-      onclick="login()"
-      class="w-full bg-black text-white font-semibold py-3 rounded-xl hover:bg-gray-900 transition"
-      aria-label="Login with TikTok"
-    >
-      Continue with TikTok
+    <button onclick="login()"
+            class="w-full bg-black text-white font-semibold py-3 rounded-xl hover:shadow-[0_0_10px_2px_rgba(0,0,0,0.4)] hover:bg-gray-900 transition duration-300"
+            aria-label="Login with TikTok">
+      🚀 Continue with TikTok
     </button>
+
+    <!-- Spinner -->
+    <div id="loading" class="hidden text-center text-gray-500 text-sm">
+      <svg class="w-6 h-6 mx-auto animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4"
+              d="M4 12a8 8 0 018-8" class="opacity-75" />
+      </svg>
+      Fetching TikTok profile...
+    </div>
 
     <!-- User Info Display -->
     <div id="result" class="hidden mt-8 text-center space-y-4">
-      <img id="avatar" class="mx-auto w-24 h-24 rounded-full border-4 border-black" alt="User Avatar" />
+      <img id="avatar" class="mx-auto w-24 h-24 rounded-full border-4 border-black shadow" alt="User Avatar" />
       <p id="username" class="text-xl font-semibold text-gray-800"></p>
-      <p id="display_name" class="text-gray-600"></p>
+      <p id="display_name" class="text-gray-600 text-sm"></p>
     </div>
+
+    <!-- Error -->
+    <div id="error" class="hidden text-center text-sm text-red-500">⚠️ Failed to fetch user information. Please try again.</div>
   </div>
 
   <script>
@@ -55,29 +78,42 @@
       window.location.href = "/login";
     }
 
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("code") && params.has("state")) {
-      fetch(`/callback?code=${params.get("code")}&state=${params.get("state")}`)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.access_token) throw new Error("No access token received");
-          const token = data.access_token;
-          return fetch(`/me?token=${token}`);
-        })
-        .then(res => res.json())
-        .then(userData => {
-          if (!userData.data || !userData.data.user) throw new Error("User data not found");
-          const user = userData.data.user;
+    async function fetchTikTokUser(code, state) {
+      try {
+        const tokenRes = await fetch(`/callback?code=${code}&state=${state}`);
+        const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) throw new Error("No token");
+
+        const userRes = await fetch(`/me?token=${tokenData.access_token}`);
+        const userData = await userRes.json();
+
+        return userData?.data?.user;
+      } catch (err) {
+        console.error("Fetch Error:", err);
+        throw err;
+      }
+    }
+
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("code") && params.has("state")) {
+        document.getElementById("loading").classList.remove("hidden");
+
+        try {
+          const user = await fetchTikTokUser(params.get("code"), params.get("state"));
+          if (!user) throw new Error("Missing user data");
+
           document.getElementById("avatar").src = user.avatar_url;
           document.getElementById("username").textContent = `@${user.unique_id || user.username}`;
           document.getElementById("display_name").textContent = user.display_name || "";
           document.getElementById("result").classList.remove("hidden");
-        })
-        .catch(err => {
-          console.error("Error fetching user data:", err);
-          alert("Failed to fetch user information. Please try logging in again.");
-        });
-    }
+        } catch (err) {
+          document.getElementById("error").classList.remove("hidden");
+        } finally {
+          document.getElementById("loading").classList.add("hidden");
+        }
+      }
+    })();
   </script>
 </body>
 </html>
