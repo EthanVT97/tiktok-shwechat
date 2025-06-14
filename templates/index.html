@@ -3,76 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ShweChat × TikTok Auth</title>
+  <title>ShweChat × TikTok Login</title>
   <meta name="theme-color" content="#ff0050" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes float {
-      0% { transform: translateY(0px); }
+      0% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
-      100% { transform: translateY(0px); }
+      100% { transform: translateY(0); }
     }
     .float {
-      animation: float 3s ease-in-out infinite;
+      animation: float 4s ease-in-out infinite;
     }
     .glass {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border-radius: 1.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 32px rgba(0,0,0,0.2);
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-[#fff7d6] via-white to-[#ffd6e7] min-h-screen flex items-center justify-center px-4">
+<body class="bg-gradient-to-br from-[#ffe0eb] via-white to-[#fffcd9] min-h-screen flex items-center justify-center p-4 font-sans">
 
-  <div class="w-full max-w-md glass p-8 space-y-8">
-    <!-- Partnership Badge -->
-    <div class="flex flex-col items-center space-y-3">
-      <div class="flex items-center space-x-4">
-        <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/shwechat_logo.png"
-             alt="ShweChat Logo" class="w-20 h-20 object-contain float" />
-        <div class="text-3xl font-bold text-gray-600">×</div>
-        <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/TikTok_logo.png"
-             alt="TikTok Logo" class="w-16 h-16 object-contain float" />
-      </div>
-      <span class="text-xs font-semibold text-white bg-[#ff0050] px-4 py-1 rounded-full shadow">🤝 Official Integration Partner</span>
+  <div class="glass w-full max-w-2xl p-8 space-y-6 text-center">
+    <!-- Logo Section -->
+    <div class="flex items-center justify-center space-x-4">
+      <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/shwechat_logo.png" alt="ShweChat" class="w-20 h-20 float" />
+      <span class="text-3xl font-bold text-gray-600">×</span>
+      <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/TikTok_logo.png" alt="TikTok" class="w-16 h-16 float" />
     </div>
 
-    <!-- Title -->
-    <h1 class="text-center text-3xl font-extrabold text-gray-800">Login with TikTok</h1>
-    <p class="text-center text-gray-600 text-sm">Securely link your TikTok account to use ShweChat AI services.</p>
+    <!-- Badge -->
+    <span class="text-sm font-semibold text-white bg-[#ff0050] px-4 py-1 rounded-full shadow-md inline-block">🚀 Official TikTok Business Login</span>
+
+    <!-- Welcome Section -->
+    <h1 class="text-4xl font-extrabold text-gray-800">Welcome to <span class="text-[#ff0050]">ShweChat</span> Platform</h1>
+    <p class="text-gray-600 text-md max-w-md mx-auto">Connect your TikTok profile to explore powerful AI tools built for modern business growth in Myanmar.</p>
+
+    <!-- 🔥 Auto Slider: Services -->
+    <div class="mt-6">
+      <h2 class="text-xl font-bold text-gray-700 mb-3">Our Business Tools</h2>
+      <div id="slider" class="flex space-x-4 overflow-hidden snap-x snap-mandatory transition-all duration-500">
+        <div class="snap-center shrink-0 w-56 bg-white border rounded-xl shadow-md p-4">
+          <h3 class="text-sm font-bold text-[#ff0050]">🏠 Real Estate Bot</h3>
+          <p class="text-xs text-gray-600 mt-2">Get property insights & listing analytics across Yangon.</p>
+        </div>
+        <div class="snap-center shrink-0 w-56 bg-white border rounded-xl shadow-md p-4">
+          <h3 class="text-sm font-bold text-[#ff0050]">🛒 Live Selling Toolkit</h3>
+          <p class="text-xs text-gray-600 mt-2">AI auto-replies, product sync & TikTok live support.</p>
+        </div>
+        <div class="snap-center shrink-0 w-56 bg-white border rounded-xl shadow-md p-4">
+          <h3 class="text-sm font-bold text-[#ff0050]">📦 Delivery Bot</h3>
+          <p class="text-xs text-gray-600 mt-2">Auto pickup & tracking tools for express delivery.</p>
+        </div>
+        <div class="snap-center shrink-0 w-56 bg-white border rounded-xl shadow-md p-4">
+          <h3 class="text-sm font-bold text-[#ff0050]">📣 AI Marketing</h3>
+          <p class="text-xs text-gray-600 mt-2">Generate captions, hashtags, and campaign plans.</p>
+        </div>
+        <div class="snap-center shrink-0 w-56 bg-yellow-50 border border-dashed border-yellow-400 rounded-xl shadow-inner p-4">
+          <h3 class="text-sm font-bold text-yellow-700">🚖 Yangon Kilo Taxi</h3>
+          <p class="text-xs text-yellow-600 mt-2 italic">Coming soon! Book local taxis by distance in real-time.</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Login Button -->
     <button onclick="login()"
-            class="w-full bg-black text-white font-semibold py-3 rounded-xl hover:shadow-[0_0_10px_2px_rgba(0,0,0,0.4)] hover:bg-gray-900 transition duration-300"
-            aria-label="Login with TikTok">
-      🚀 Continue with TikTok
+      class="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-[#ff0050] to-[#ff7a7a] hover:scale-105 transition-all shadow-lg">
+      🔐 Connect with TikTok Now
     </button>
 
-    <!-- Spinner -->
-    <div id="loading" class="hidden text-center text-gray-500 text-sm">
+    <!-- Loading Spinner -->
+    <div id="loading" class="hidden text-gray-500 text-sm mt-4 animate-pulse">
       <svg class="w-6 h-6 mx-auto animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4"
-              d="M4 12a8 8 0 018-8" class="opacity-75" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M4 12a8 8 0 018-8" class="opacity-75" />
       </svg>
-      Fetching TikTok profile...
+      Checking your TikTok profile...
     </div>
 
-    <!-- User Info Display -->
-    <div id="result" class="hidden mt-8 text-center space-y-4">
-      <img id="avatar" class="mx-auto w-24 h-24 rounded-full border-4 border-black shadow" alt="User Avatar" />
-      <p id="username" class="text-xl font-semibold text-gray-800"></p>
-      <p id="display_name" class="text-gray-600 text-sm"></p>
+    <!-- TikTok User Info -->
+    <div id="result" class="hidden text-center mt-6">
+      <img id="avatar" class="w-24 h-24 mx-auto rounded-full border-4 border-[#ff0050]" />
+      <p id="username" class="text-lg font-bold text-gray-900 mt-2"></p>
+      <p id="display_name" class="text-sm text-gray-600"></p>
     </div>
 
-    <!-- Error -->
-    <div id="error" class="hidden text-center text-sm text-red-500">⚠️ Failed to fetch user information. Please try again.</div>
+    <!-- Error Message -->
+    <div id="error" class="hidden text-center text-red-600 text-sm mt-4">⚠️ Something went wrong. Please try again later.</div>
   </div>
 
+  <!-- JS: Login & Slider Logic -->
   <script>
     function login() {
       window.location.href = "/login";
@@ -83,13 +105,11 @@
         const tokenRes = await fetch(`/callback?code=${code}&state=${state}`);
         const tokenData = await tokenRes.json();
         if (!tokenData.access_token) throw new Error("No token");
-
         const userRes = await fetch(`/me?token=${tokenData.access_token}`);
         const userData = await userRes.json();
-
         return userData?.data?.user;
       } catch (err) {
-        console.error("Fetch Error:", err);
+        console.error("Error fetching user:", err);
         throw err;
       }
     }
@@ -98,11 +118,9 @@
       const params = new URLSearchParams(window.location.search);
       if (params.has("code") && params.has("state")) {
         document.getElementById("loading").classList.remove("hidden");
-
         try {
           const user = await fetchTikTokUser(params.get("code"), params.get("state"));
-          if (!user) throw new Error("Missing user data");
-
+          if (!user) throw new Error("User data missing");
           document.getElementById("avatar").src = user.avatar_url;
           document.getElementById("username").textContent = `@${user.unique_id || user.username}`;
           document.getElementById("display_name").textContent = user.display_name || "";
@@ -114,6 +132,19 @@
         }
       }
     })();
+
+    // Auto Slide Cards
+    const slider = document.getElementById('slider');
+    let scrollPos = 0;
+    const step = 240;
+    setInterval(() => {
+      if (!slider) return;
+      scrollPos += step;
+      if (scrollPos >= slider.scrollWidth - slider.clientWidth) {
+        scrollPos = 0;
+      }
+      slider.scrollTo({ left: scrollPos, behavior: 'smooth' });
+    }, 3000);
   </script>
 </body>
 </html>
