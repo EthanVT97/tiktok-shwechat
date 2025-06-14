@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ShweChat TikTok Auth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-pink-100 via-white to-purple-100 min-h-screen flex items-center justify-center px-4">
+
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6">
+    <div class="flex flex-col items-center text-center space-y-4">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/TikTok_logo.svg" class="w-16 h-16" alt="TikTok Logo" />
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Log in with TikTok</h1>
+      <p class="text-sm text-gray-500">Connect your TikTok account to view your profile info.</p>
+
+      <button onclick="login()" class="mt-4 bg-black text-white font-semibold py-2 px-4 rounded-xl hover:bg-gray-900 transition w-full">
+        Continue with TikTok
+      </button>
+
+      <div id="result" class="w-full mt-6 hidden">
+        <img id="avatar" class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-black" />
+        <p id="username" class="text-lg font-semibold"></p>
+        <p id="display_name" class="text-sm text-gray-600"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function login() {
+      window.location.href = "/login";
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("code") && params.has("state")) {
+      fetch(`/callback?code=${params.get("code")}&state=${params.get("state")}`)
+        .then(res => res.json())
+        .then(data => {
+          const token = data.access_token;
+          return fetch(`/me?token=${token}`);
+        })
+        .then(res => res.json())
+        .then(userData => {
+          const user = userData.data.user;
+          document.getElementById("avatar").src = user.avatar_url;
+          document.getElementById("username").textContent = `@${user.username}`;
+          document.getElementById("display_name").textContent = user.display_name;
+          document.getElementById("result").classList.remove("hidden");
+        })
+        .catch(err => console.error("Error:", err));
+    }
+  </script>
+</body>
+</html>
