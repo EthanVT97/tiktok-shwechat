@@ -9,40 +9,54 @@ import os
 from urllib.parse import urlencode
 from secrets import token_urlsafe
 from supabase import create_client, Client
+import logging
 
-# Load environment variables
+# Load env variables
 load_dotenv()
 
-# Supabase setup
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+if not SUPABASE_URL or not SUPABASE_KEY:
+    logger.error("SUPABASE_URL or SUPABASE_KEY not set in environment variables.")
+    raise RuntimeError("Missing Supabase configuration")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# FastAPI app
+# FastAPI app instance
 app = FastAPI()
 
-# Import routers
+# Import and include routers
 from modules import real_estate
 app.include_router(real_estate.router)
 
-# Middleware
+# Add session middleware
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET", "changeme"),
+    secret_key=os.getenv("SESSION_SECRET", "changeme_secure_secret_should_be_long"),
     session_cookie="session",
     https_only=os.getenv("ENVIRONMENT") == "production"
 )
 
-# Static & Templates
+# Static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# TikTok Config
+# TikTok OAuth config getter
 def get_tiktok_config():
+    client_key = os.getenv("TIKTOK_CLIENT_KEY")
+    client_secret = os.getenv("TIKTOK_CLIENT_SECRET")
+    redirect_uri = os.getenv("TIKTOK_REDIRECT_URI")
+    if not (client_key and client_secret and redirect_uri):
+        logger.error("TikTok OAuth config missing from environment variables")
+        raise RuntimeError("TikTok OAuth environment variables missing")
     return {
-        "client_key": os.getenv("TIKTOK_CLIENT_KEY"),
-        "client_secret": os.getenv("TIKTOK_CLIENT_SECRET"),
-        "redirect_uri": os.getenv("TIKTOK_REDIRECT_URI")
+        "client_key": client_key,
+        "client_secret": client_secret,
+        "redirect_uri": redirect_uri
     }
 
 @app.get("/")
@@ -61,46 +75,78 @@ async def login(request: Request):
         "redirect_uri": conf["redirect_uri"],
         "state": state
     }
-    return RedirectResponse(f"https://www.tiktok.com/v2/auth/authorize/?{urlencode(params)}")
+    url = f"https://www.tiktok.com/v2/auth/authorize/?{urlencode(params)}"
+    return RedirectResponse(url)
 
 @app.get("/callback")
 async def callback(request: Request, code: str = None, state: str = None):
-    if state != request.session.get("oauth_state"):
-        raise HTTPException(status_code=403, detail="Invalid state")
+    # Validate OAuth state
+    if not state or state != request.session.get("oauth_state"):
+        logger.warning("Invalid or missing OAuth state parameter.")
+        raise HTTPException(status_code=403, detail="Invalid OAuth state")
+
+    if not code:
+        logger.warning("No OAuth code received in callback.")
+        raise HTTPException(status_code=400, detail="Missing code parameter")
 
     conf = get_tiktok_config()
 
-    async with httpx.AsyncClient() as client:
-        # Get access token
-        token_res = await client.post("https://open.tiktokapis.com/v2/oauth/token/", data={
-            "client_key": conf["client_key"],
-            "client_secret": conf["client_secret"],
-            "code": code,
-            "grant_type": "authorization_code",
-            "redirect_uri": conf["redirect_uri"]
-        })
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        # Exchange code for access token
+        token_res = await client.post(
+            "https://open.tiktokapis.com/v2/oauth/token/",
+            data={
+                "client_key": conf["client_key"],
+                "client_secret": conf["client_secret"],
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": conf["redirect_uri"]
+            }
+        )
+        if token_res.status_code != 200:
+            logger.error(f"Failed to get access token: {token_res.text}")
+            raise HTTPException(status_code=token_res.status_code, detail="Failed to get access token")
         token_data = token_res.json()
         access_token = token_data.get("access_token")
+        if not access_token:
+            logger.error(f"Access token missing in response: {token_data}")
+            raise HTTPException(status_code=500, detail="Access token missing in response")
         request.session["access_token"] = access_token
 
-        # Get user info
-        user_res = await client.get("https://open.tiktokapis.com/v2/user/info/", headers={
-            "Authorization": f"Bearer {access_token}"
-        }, params={"fields": "display_name,avatar_url,username,unique_id"})
+        # Fetch user info
+        user_res = await client.get(
+            "https://open.tiktokapis.com/v2/user/info/",
+            headers={"Authorization": f"Bearer {access_token}"},
+            params={"fields": "display_name,avatar_url,username,unique_id"}
+        )
+        if user_res.status_code != 200:
+            logger.error(f"Failed to fetch user info: {user_res.text}")
+            raise HTTPException(status_code=user_res.status_code, detail="Failed to fetch user info")
+
         user_data = user_res.json().get("data", {})
+        if not user_data:
+            logger.error(f"User data missing in response: {user_res.text}")
+            raise HTTPException(status_code=500, detail="User data missing in response")
+
         request.session["user_info"] = user_data
 
-        # Save user in Supabase
+        # Save or update user in Supabase (synchronously)
         unique_id = user_data.get("unique_id")
         if unique_id:
-            result = supabase.table("users").select("id").eq("tiktok_id", unique_id).execute()
-            if not result.data:
-                supabase.table("users").insert({
-                    "tiktok_id": unique_id,
-                    "username": user_data.get("username"),
-                    "display_name": user_data.get("display_name"),
-                    "avatar_url": user_data.get("avatar_url")
-                }).execute()
+            try:
+                result = supabase.table("users").select("id").eq("tiktok_id", unique_id).execute()
+                if not result.data:
+                    supabase.table("users").insert({
+                        "tiktok_id": unique_id,
+                        "username": user_data.get("username"),
+                        "display_name": user_data.get("display_name"),
+                        "avatar_url": user_data.get("avatar_url")
+                    }).execute()
+                else:
+                    # Optional: update existing user info here if needed
+                    pass
+            except Exception as e:
+                logger.error(f"Supabase DB error: {e}")
 
     return RedirectResponse("/dashboard")
 
