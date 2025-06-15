@@ -1,4 +1,12 @@
-from fastapi import FastAPI, Request, HTTPException from fastapi.responses import RedirectResponse, HTMLResponse from fastapi.templating import Jinja2Templates from fastapi.staticfiles import StaticFiles from starlette.middleware.sessions import SessionMiddleware from dotenv import load_dotenv import httpx import os from urllib.parse import urlencode from secrets import token_urlsafe from supabase import create_client, Client
+from fastapi import FastAPI, Request, HTTPException 
+from fastapi.responses import RedirectResponse, HTMLResponse 
+from fastapi.templating import Jinja2Templates 
+from fastapi.staticfiles import StaticFiles 
+from starlette.middleware.sessions import SessionMiddleware 
+from dotenv import load_dotenv import httpx import os 
+from urllib.parse import urlencode 
+from secrets import token_urlsafe 
+from supabase import create_client, Client
 
 Load environment variables
 
