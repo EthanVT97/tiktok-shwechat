@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><title>Your Listings</title></head>
+<body>
+  <h2>📋 Your Real Estate Listings</h2>
+  {% if listings %}
+    <ul>
+      {% for listing in listings %}
+        <li><strong>{{ listing.title }}</strong>: {{ listing.description }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No listings yet.</p>
+  {% endif %}
+  <a href="/dashboard">⬅ Back to Dashboard</a>
+</body>
+</html>
