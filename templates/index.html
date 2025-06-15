@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ShweChat 🤝 TikTok Login</title>
   <meta name="theme-color" content="#ff0050" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap');
-
     body {
       font-family: 'Poppins', 'Noto Sans Myanmar', sans-serif;
     }
-
     @keyframes float {
       0% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
@@ -50,35 +48,15 @@
   </style>
 </head>
 <body class="bg-gradient-to-br from-[#fff0f5] via-[#fffff8] to-[#f8f4ff] min-h-screen flex items-center justify-center p-4 asian-pattern-bg">
+
   <div class="glass w-full max-w-2xl p-8 space-y-8 text-center">
+    <!-- Logo Section -->
     <div class="flex flex-col items-center">
-      <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/shwechat_logo.png" alt="ShweChat" class="w-20 h-20 float" loading="lazy" />
+      <img src="https://raw.githubusercontent.com/EthanVT97/tiktok-shwechat/main/static/shwechat_logo.png" alt="ShweChat" class="w-20 h-20 float mb-2" />
       <span class="text-sm font-medium text-gray-600 mb-4">TikTok နှင့် ချိတ်ဆက်ပြီး စီးပွားရေးတိုးတက်စေရန်</span>
     </div>
 
-    <div class="flex justify-center">
-      <span class="text-sm font-semibold text-white bg-[#ff0050] px-4 py-1 rounded-full shadow-md inline-flex items-center">
-        <img src="https://flagcdn.com/w20/mm.png" alt="Myanmar" class="mr-2 h-3" loading="lazy"> 
-        Official TikTok Business Login
-      </span>
-    </div>
-
-    <div class="space-y-3">
-      <h1 class="text-4xl font-extrabold text-gray-800">Welcome to <span class="text-[#ff0050]">ShweChat</span> Platform</h1>
-      <p class="text-gray-600 text-md max-w-md mx-auto">Connect your TikTok profile to explore powerful AI tools built for modern business growth in Myanmar.</p>
-      <p class="text-sm text-gray-500 font-medium">မြန်မာနိုင်ငံအတွက် အထူးပြုလုပ်ထားသော စီးပွားရေးနည်းဗျုဟာများ</p>
-    </div>
-
-    <!-- Business Tools Cards (Slider) -->
-    <div class="mt-8">
-      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center justify-center">
-        <i class="fas fa-gem text-[#ff0050] mr-2"></i> Our Business Tools
-      </h2>
-      <div id="slider" class="flex space-x-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide">
-        <!-- Cards go here... same as before -->
-      </div>
-    </div>
-
+    <!-- TikTok Connect -->
     <div class="pt-4">
       <button onclick="login()"
         class="w-full py-3 rounded-xl font-bold text-white btn-gradient hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2">
@@ -88,48 +66,26 @@
       <p class="text-xs text-gray-500 mt-2">TikTok အကောင့်ဖြင့် ချိတ်ဆက်မည်</p>
     </div>
 
-    <!-- Loading Spinner -->
     <div id="loading" class="hidden text-gray-500 text-sm mt-6 animate-pulse">
-      <svg class="w-16 h-16 mx-auto animate-spin text-[#ff0050]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M4 12a8 8 0 018-8" class="opacity-75" />
+      <svg class="w-6 h-6 mx-auto animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
       </svg>
-      Checking TikTok profile... <br/>
-      <span class="text-xs">TikTok အကောင့်စစ်ဆေးနေသည်</span>
+      TikTok အကောင့်ကို စစ်ဆေးနေသည်...
     </div>
 
-    <!-- Result Section -->
     <div id="result" class="hidden text-center mt-6">
-      <img id="avatar" class="w-24 h-24 rounded-full mx-auto border-4 border-white shadow" />
-      <p id="username" class="text-lg font-bold text-gray-900 mt-2"></p>
+      <img id="avatar" class="w-24 h-24 rounded-full mx-auto" />
+      <p id="username" class="text-lg font-bold mt-2"></p>
       <p id="display_name" class="text-sm text-gray-600"></p>
-      <div class="mt-4 bg-[#f8f8f8] rounded-lg p-3 max-w-xs mx-auto">
-        <p class="text-xs text-gray-600">Welcome to ShweChat Business!</p>
-        <p class="text-[10px] text-gray-400 mt-1">ShweChat စီးပွားရေးပလပ်ဖောင်းမှ ကြိုဆိုပါသည်</p>
-      </div>
     </div>
 
-    <!-- Error Message -->
     <div id="error" class="hidden text-center mt-4">
-      <div class="bg-red-50 text-red-600 text-sm rounded-lg p-3 max-w-xs mx-auto">
-        <div class="flex items-center justify-center space-x-2">
-          <i class="fas fa-exclamation-circle"></i>
-          <span>Something went wrong. Please try again later.</span>
-        </div>
-        <p class="text-[10px] text-red-400 mt-1">တစ်ခုခုမှားယွင်းနေပါသည်။ ကျေးဇူးပြု၍ နောက်မှထပ်ကြိုးစားပါ။</p>
+      <div class="bg-red-100 text-red-700 rounded p-3">
+        တစ်ခုခုမှားယွင်းနေပါသည်။ ကျေးဇူးပြု၍ နောက်မှထပ်ကြိုးစားပါ။
       </div>
     </div>
 
-    <!-- Footer -->
-    <div class="pt-6 border-t border-gray-100 mt-6">
-      <div class="flex justify-center space-x-6">
-        <a href="#" class="text-gray-400 hover:text-[#ff0050] transition-colors" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" class="text-gray-400 hover:text-[#ff0050] transition-colors" rel="noopener noreferrer"><i class="fab fa-telegram-plane"></i></a>
-        <a href="#" class="text-gray-400 hover:text-[#ff0050] transition-colors" rel="noopener noreferrer"><i class="fab fa-viber"></i></a>
-      </div>
-      <p class="text-xs text-gray-400 mt-3">© 2025 ShweChat. All rights reserved.</p>
-      <p class="text-[10px] text-gray-300 mt-1">မြန်မာ့စီးပွားရေးအတွက် အကောင်းဆုံးပလပ်ဖောင်း</p>
-    </div>
   </div>
 
   <script>
@@ -137,54 +93,26 @@
       window.location.href = "/login";
     }
 
-    async function fetchTikTokUser(code, state) {
-      try {
-        const tokenRes = await fetch(`/callback?code=${code}&state=${state}`, {
-          headers: { Accept: "application/json" },
-        });
-        const tokenData = await tokenRes.json();
-        if (!tokenData.access_token) throw new Error("No token");
-
-        const userRes = await fetch(`/me?token=${tokenData.access_token}`);
-        const userData = await userRes.json();
-        return userData?.data?.user;
-      } catch (err) {
-        console.error("Error fetching user:", err);
-        throw err;
-      }
-    }
-
     (async () => {
       const params = new URLSearchParams(window.location.search);
       if (params.has("code") && params.has("state")) {
         document.getElementById("loading").classList.remove("hidden");
         try {
-          const user = await fetchTikTokUser(params.get("code"), params.get("state"));
-          if (!user) throw new Error("User data missing");
+          const userRes = await fetch("/me");
+          const data = await userRes.json();
+          const user = data?.data?.user;
+          if (!user) throw new Error("No user");
           document.getElementById("avatar").src = user.avatar_url;
           document.getElementById("username").textContent = `@${user.unique_id || user.username}`;
           document.getElementById("display_name").textContent = user.display_name || "";
           document.getElementById("result").classList.remove("hidden");
-        } catch (err) {
+        } catch (e) {
           document.getElementById("error").classList.remove("hidden");
         } finally {
           document.getElementById("loading").classList.add("hidden");
         }
       }
     })();
-
-    const slider = document.getElementById('slider');
-    if (slider) {
-      let scrollPos = 0;
-      const step = 240;
-      setInterval(() => {
-        scrollPos += step;
-        if (scrollPos >= slider.scrollWidth - slider.clientWidth) {
-          scrollPos = 0;
-        }
-        slider.scrollTo({ left: scrollPos, behavior: 'smooth' });
-      }, 3000);
-    }
   </script>
 </body>
 </html>
