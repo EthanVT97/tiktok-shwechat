@@ -21,14 +21,16 @@ app = FastAPI()
 # ======================
 # Middleware Configuration
 # ======================
+if not os.getenv("SESSION_SECRET"):
+    raise RuntimeError("SESSION_SECRET must be set in .env")
+
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET", "default-secret-key-change-me"),
+    secret_key=os.getenv("SESSION_SECRET"),
     session_cookie="shwechat_session",
     https_only=True if os.getenv("ENVIRONMENT") == "production" else False
 )
 
-# Production-only middleware
 if os.getenv("ENVIRONMENT") == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
     app.add_middleware(
@@ -46,7 +48,6 @@ templates = Jinja2Templates(directory="templates")
 # Helper Functions
 # ======================
 def get_tiktok_client():
-    """Get TikTok OAuth credentials from environment"""
     config = {
         "client_key": os.getenv("TIKTOK_CLIENT_KEY"),
         "client_secret": os.getenv("TIKTOK_CLIENT_SECRET"),
@@ -61,16 +62,14 @@ def get_tiktok_client():
 # ======================
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    """Homepage with login button"""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/login")
 async def login(request: Request):
-    """Initiate TikTok OAuth flow"""
     tiktok_config = get_tiktok_client()
     state = token_urlsafe(16)
     request.session["oauth_state"] = state
-    
+
     params = {
         "client_key": tiktok_config["client_key"],
         "response_type": "code",
@@ -80,7 +79,6 @@ async def login(request: Request):
     }
     return RedirectResponse(f"https://www.tiktok.com/v2/auth/authorize/?{urlencode(params)}")
 
-# Updated callback endpoint to handle both GET and POST
 @app.api_route("/callback", methods=["GET", "POST"])
 async def callback(
     request: Request,
@@ -88,12 +86,9 @@ async def callback(
     state: Optional[str] = None,
     error: Optional[str] = None
 ):
-    """Handle TikTok OAuth callback (GET for redirect, POST for webhooks)"""
-    # Handle errors from TikTok
     if error:
         return JSONResponse({"error": error}, status_code=400)
 
-    # For POST requests (webhook), get code from form data
     if request.method == "POST":
         form_data = await request.form()
         code = code or form_data.get("code")
@@ -102,11 +97,9 @@ async def callback(
     if not code:
         return JSONResponse({"error": "Authorization code missing"}, status_code=400)
 
-    # Validate state parameter
     if state != request.session.get("oauth_state"):
         return JSONResponse({"error": "Invalid state parameter"}, status_code=403)
 
-    # Exchange code for access token
     try:
         tiktok_config = get_tiktok_client()
         async with httpx.AsyncClient() as client:
@@ -123,12 +116,14 @@ async def callback(
             response.raise_for_status()
             token_data = response.json()
 
-            # Store tokens in session
             request.session.update({
                 "access_token": token_data.get("access_token"),
                 "refresh_token": token_data.get("refresh_token"),
                 "expires_in": token_data.get("expires_in")
             })
+
+            if "application/json" in request.headers.get("accept", ""):
+                return JSONResponse(token_data)
 
             return RedirectResponse(url="/dashboard")
 
@@ -139,13 +134,25 @@ async def callback(
             "response": e.response.json() if e.response else None
         }, status_code=500)
 
+@app.get("/me")
+async def me(token: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                "https://open.tiktokapis.com/v2/user/info/",
+                headers={"Authorization": f"Bearer {token}"},
+                params={"fields": "avatar_url,display_name,username,unique_id"}
+            )
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=400, detail="Failed to fetch user info")
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    """Protected dashboard page"""
     if "access_token" not in request.session:
         return RedirectResponse(url="/")
-    
-    # Fetch user info if not already in session
+
     if "user_info" not in request.session:
         try:
             async with httpx.AsyncClient() as client:
@@ -156,8 +163,7 @@ async def dashboard(request: Request):
                 )
                 response.raise_for_status()
                 request.session["user_info"] = response.json().get("data", {})
-        except Exception as e:
-            # Handle error but still show dashboard
+        except Exception:
             pass
 
     return templates.TemplateResponse("dashboard.html", {
@@ -167,7 +173,6 @@ async def dashboard(request: Request):
 
 @app.get("/logout")
 async def logout(request: Request):
-    """Clear session and log out"""
     request.session.clear()
     return RedirectResponse(url="/")
 
@@ -178,3 +183,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    
