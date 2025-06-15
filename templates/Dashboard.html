@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+  <h2>👋 Welcome {{ user.display_name }}</h2>
+  <ul>
+    {% for svc in services %}
+      <li>
+        <a href="{{ svc.path }}"><strong>{{ svc.title }}</strong> – {{ svc.description }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+  <a href="/logout">Logout</a>
+</body>
+</html>
