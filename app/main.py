@@ -7,6 +7,8 @@ from dotenv import load_dotenv import httpx import os
 from urllib.parse import urlencode 
 from secrets import token_urlsafe 
 from supabase import create_client, Client
+from modules import real_estate
+app.include_router(real_estate.router)
 
 Load environment variables
 
@@ -35,7 +37,23 @@ def get_tiktok_config(): return { "client_key": os.getenv("TIKTOK_CLIENT_KEY"), 
 @app.get("/login") async def login(request: Request): conf = get_tiktok_config() state = token_urlsafe(16) request.session["oauth_state"] = state params = { "client_key": conf["client_key"], "response_type": "code", "scope": "user.info.basic", "redirect_uri": conf["redirect_uri"], "state": state } return RedirectResponse(f"https://www.tiktok.com/v2/auth/authorize/?{urlencode(params)}")
 
 @app.get("/callback") async def callback(request: Request, code: str = None, state: str = None): if state != request.session.get("oauth_state"): raise HTTPException(status_code=403, detail="Invalid state") conf = get_tiktok_config() async with httpx.AsyncClient() as client: # Exchange code for access token token_res = await client.post("https://open.tiktokapis.com/v2/oauth/token/", data={ "client_key": conf["client_key"], "client_secret": conf["client_secret"], "code": code, "grant_type": "authorization_code", "redirect_uri": conf["redirect_uri"] }) token_data = token_res.json() access_token = token_data.get("access_token") request.session["access_token"] = access_token
+@router.get("/service/real-estate/listings", response_class=HTMLResponse)
+async def list_properties(request: Request):
+    user = request.session.get("user_info")
+    from supabase import create_client
+    from dotenv import dotenv_values
 
+    config = dotenv_values(".env")
+    supabase = create_client(config["SUPABASE_URL"], config["SUPABASE_KEY"])
+
+    result = supabase.table("properties").select("*").eq("owner_id", user["unique_id"]).execute()
+    listings = result.data or []
+
+    return templates.TemplateResponse("real_estate_listings.html", {
+        "request": request,
+        "user": user,
+        "listings": listings
+    })
 # Get user info from TikTok
     user_res = await client.get("https://open.tiktokapis.com/v2/user/info/", headers={
         "Authorization": f"Bearer {access_token}"
